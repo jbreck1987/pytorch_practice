@@ -113,17 +113,17 @@ def make_dataset(qp_timestream: QuasiparticleTimeStream,
     print(f'Number of samples without pulses: {len(no_pulses)}')
 
 
-def plot_stream_training_data(i_stream: numpy.array,
-                              q_stream: numpy.array,
-                              label_stream: numpy.array,
-                              units: str
-                              ) -> None:
+def plot_stream_data(i_stream: numpy.array,
+                    q_stream: numpy.array,
+                    label_stream: numpy.array,
+                    units: str
+                    ) -> None:
     """
     Plots the training data. Assumes training samples are I and Q timestreams
     and the labels are timestreams of photon events (based on the I/Q values).
     """
 
-    fig, ax = plt.subplots(3,1,figsize = (10,10))
+    _, ax = plt.subplots(3,1,figsize = (10,10))
     ax[0].plot(np.arange(0, i_stream.size), i_stream)
     ax[0].set_xlabel(f'Time ({units})')
     ax[0].set_ylabel('I Timestream', fontweight = 'bold', size = 'large')
