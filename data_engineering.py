@@ -5,6 +5,7 @@ for different model architectures and experiments.
 import numpy as np
 import numpy
 import math
+import matplotlib.pyplot as plt
 
 from mkidreadoutanalysis.quasiparticletimestream import QuasiparticleTimeStream
 from mkidreadoutanalysis.resonator import Resonator, ResonatorSweep, FrequencyGrid, RFElectronics, ReadoutPhotonResonator
@@ -110,3 +111,29 @@ def make_dataset(qp_timestream: QuasiparticleTimeStream,
                        edge_padding=edge_padding)
     print(f'Number of samples with pulses: {len(with_pulses)}')
     print(f'Number of samples without pulses: {len(no_pulses)}')
+
+
+def plot_stream_training_data(i_stream: numpy.array,
+                              q_stream: numpy.array,
+                              label_stream: numpy.array,
+                              units: str
+                              ) -> None:
+    """
+    Plots the training data. Assumes training samples are I and Q timestreams
+    and the labels are timestreams of photon events (based on the I/Q values).
+    """
+
+    fig, ax = plt.subplots(3,1,figsize = (10,10))
+    ax[0].plot(np.arange(0, i_stream.size), i_stream)
+    ax[0].set_xlabel(f'Time ({units})')
+    ax[0].set_ylabel('I Timestream', fontweight = 'bold', size = 'large')
+
+    ax[1].plot(np.arange(0, q_stream.size), q_stream)
+    ax[1].set_xlabel(f'Time ({units})')
+    ax[1].set_ylabel('Q Timestream', fontweight = 'bold', size = 'large')
+
+    ax[2].plot(np.arange(0, label_stream.size), label_stream)
+    ax[2].set_xlabel(f'Time ({units})')
+    ax[2].set_ylabel('Photon Timestream', fontweight = 'bold', size = 'large')
+    plt.show()
+
