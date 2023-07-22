@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
 import torch
 import random
+from typing import List
 
 from mkidreadoutanalysis.quasiparticletimestream import QuasiparticleTimeStream
 from mkidreadoutanalysis.resonator import Resonator, ResonatorSweep, FrequencyGrid, RFElectronics, ReadoutPhotonResonator
@@ -205,4 +206,22 @@ def make_predictions(model: torch.nn.Module, samples: list) -> list:
     model.eval()
     with torch.inference_mode():
         return [model(x) for x in samples]
+
+def add_noise(pulse_list: List[numpy.array], range: float) -> None:
+    """
+    Adds uniform noise to photon arrival data. The pulse_list is expected to have the shape returned by
+    the make_dataset function (with photon arrival data in dimension 2).
+
+    Inputs:
+        pulse_list: list of numpy arrays, each containing I/Q/photon timestream data
+        range: max value of sampled values to add as noise
+    """
+    rng = np.random.default_rng() 
+    for sample in pulse_list:
+        # Save the index with the pulse
+        pulse_idx = sample[2] == 1 
+        # Add the noise 
+        sample[2] = rng.random(sample[2].shape) * (range - 0)
+        # Make sure the pulse is still 1 
+        sample[2][pulse_idx] = 1
 
