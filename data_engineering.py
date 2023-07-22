@@ -125,7 +125,7 @@ def make_dataset(qp_timestream: QuasiparticleTimeStream,
         if len(with_pulses) > count:
             print(f'Num samples with photons: {len(with_pulses)}/{num_samples - (num_samples * no_pulse_fraction)}', end='\r')
             count = len(with_pulses)
-    print(f'Number of samples with pulses: {len(with_pulses)}')
+    print(f'\nNumber of samples with pulses: {len(with_pulses)}')
     print(f'Number of samples without pulses: {len(no_pulses)}')
 
 
