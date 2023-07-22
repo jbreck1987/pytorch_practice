@@ -157,11 +157,15 @@ def plot_stream_data(i_stream: numpy.array,
 def train_step(model: torch.nn.Module,
                data_loader: torch.utils.data.DataLoader,
                loss_fn: torch.nn.Module,
-               optimizer: torch.optim.Optimizer) -> None:
+               optimizer: torch.optim.Optimizer,
+               device: torch.device) -> None:
 
     # Training Steps
     total_loss = 0 # need to reset loss every epoch
+    model.to(device=device) # send model to GPU if available
     for batch, (X, y) in enumerate(data_loader): # each batch has 32 data/labels, create object -> (batch, (X, y))
+        X, y = X.to(device), y.to(device) # send data to GPU if available
+
         model.train()
         y_pred = model(X) # Like before, need to get model's predictions
         loss = loss_fn(y_pred, y) # calculate loss for this batch
@@ -183,13 +187,17 @@ def train_step(model: torch.nn.Module,
 
 def test_step(model: torch.nn.Module,
               data_loader: torch.utils.data.DataLoader,
-              loss_fn: torch.nn.Module) -> None:
+              loss_fn: torch.nn.Module,
+              device: torch.device) -> None:
 
     # Test Steps
+    model.to(device=device) # send model to GPU if available
     model.eval()
     total_loss = 0 # need to reset loss every epoch
     with torch.inference_mode():
         for X, y in data_loader: # each batch has 32 data/labels, create object -> (batch, (X_train, y_train))
+            X, y = X.to(device), y.to(device)# send data to GPU if available
+            
             y_pred = model(X) # Like before, need to get model's predictions
             loss = loss_fn(y_pred, y) # calculate loss for this batch
             total_loss += loss # add loss from this batch (mean loss of 32 samples) to total loss for the epoch (sum of all batch loss)
