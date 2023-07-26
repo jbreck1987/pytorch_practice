@@ -158,10 +158,11 @@ def train_step(model: torch.nn.Module,
                data_loader: torch.utils.data.DataLoader,
                loss_fn: torch.nn.Module,
                optimizer: torch.optim.Optimizer,
+               accuracy_fn,
                device: torch.device) -> None:
 
     # Training Steps
-    total_loss = 0 # need to reset loss every epoch
+    total_loss, acc = 0, 0 # need to reset loss every epoch
     model.to(device=device) # send model to GPU if available
     for batch, (X, y) in enumerate(data_loader): # each batch has 32 data/labels, create object -> (batch, (X, y))
         X, y = X.to(device), y.to(device) # send data to GPU if available
@@ -170,6 +171,7 @@ def train_step(model: torch.nn.Module,
         y_pred = model(X) # Like before, need to get model's predictions
         loss = loss_fn(y_pred, y) # calculate loss for this batch
         total_loss += loss # add loss from this batch (mean loss of 32 samples) to total loss for the epoch (sum of all batch loss)
+        acc += accuracy_fn(y_pred, y)
 
         # backprop step
         optimizer.zero_grad()
@@ -181,19 +183,21 @@ def train_step(model: torch.nn.Module,
     
     # Now we want to find the AVERAGE loss and accuracy of all the batches
     total_loss /= len(data_loader)
+    acc /= len(data_loader)
     print('\n-----------')
-    print(f'Mean Train Loss: {total_loss:.4f}')
+    print(f'Mean Train Loss: {total_loss:.4f}, Mean Train Accuracy: {(acc * 100):.4f} ')
 
 
 def test_step(model: torch.nn.Module,
               data_loader: torch.utils.data.DataLoader,
               loss_fn: torch.nn.Module,
+              accuracy_fn,
               device: torch.device) -> None:
 
     # Test Steps
     model.to(device=device) # send model to GPU if available
     model.eval()
-    total_loss = 0 # need to reset loss every epoch
+    total_loss, acc = 0, 0 # need to reset loss every epoch
     with torch.inference_mode():
         for X, y in data_loader: # each batch has 32 data/labels, create object -> (batch, (X_train, y_train))
             X, y = X.to(device), y.to(device)# send data to GPU if available
@@ -201,11 +205,24 @@ def test_step(model: torch.nn.Module,
             y_pred = model(X) # Like before, need to get model's predictions
             loss = loss_fn(y_pred, y) # calculate loss for this batch
             total_loss += loss # add loss from this batch (mean loss of 32 samples) to total loss for the epoch (sum of all batch loss)
+            acc += accuracy_fn(y_pred, y)
+
 
         # Now we want to find the AVERAGE loss and accuracy of all the batches
         total_loss /= len(data_loader)
-    print(f'Mean Test Loss: {total_loss:.4f}')
+        acc /= len(data_loader)
+    print(f'Mean Test Loss: {total_loss:.4f}, Mean Test Accuracy: {(acc * 100):.4f} ')
     print('-----------\n')
+
+def accuracy_regression(y_pred: torch.Tensor, y_true: torch.Tensor) -> float:
+    """
+    Returns the accuracy [0, 1] of the predicted value compared to the true
+    value for a regularized regression model (targets are in range [0,1])
+    """
+    mag = torch.abs(y_pred.mean() - y_true.mean()).item()
+
+    # Difference between outputs > 1 implies 0% accuracy
+    return 0.0 if mag > 1 else 1 - mag
 
 def make_predictions(model: torch.nn.Module, samples: list) -> list:
     """
